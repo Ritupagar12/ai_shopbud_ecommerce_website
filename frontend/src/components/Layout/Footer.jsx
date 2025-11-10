@@ -45,7 +45,7 @@ const Footer = () => {
           {/* Brand & Contact */}
           <div className="lg:col-span-1">
             <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 mb-4">
-              ShopMate
+              ShopBud
             </h2>
             <p className="text-gray-500 dark:text-gray-400 mb-6">
               Your trusted partner for online shopping. Discover amazing products with exceptional quality and service.
@@ -53,7 +53,7 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-3 text-gray-500 dark:text-gray-400">
                 <Mail className="w-5 h-5 text-indigo-500" />
-                <span>support@shopmate.com</span>
+                <span>support@shopbud.com</span>
               </div>
               <div className="flex items-center space-x-3 text-gray-500 dark:text-gray-400">
                 <Phone className="w-5 h-5 text-indigo-500" />
@@ -154,7 +154,7 @@ const Footer = () => {
             ))}
           </div>
           <div className="text-center md:text-right text-gray-500 dark:text-gray-400 text-sm">
-            <p>© 2024 ShopMate. All rights reserved.</p>
+            <p>© 2024 ShopBud. All rights reserved.</p>
             <p className="text-xs mt-1">Developed By Ritu Pagar</p>
           </div>
         </div>
