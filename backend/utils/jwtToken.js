@@ -13,7 +13,7 @@ export const sendToken = (user, statusCode, message, res) => {
                 Date.now() + process.env.COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
             ),
             httpOnly: true, // Cookie cannot be accessed by JS in browser
-            secure: true, // required for https
+            secure: process.env.NODE_ENV === "production", // required for https
             sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", //Allows cross-site cookies
         })
         .json({
