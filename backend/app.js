@@ -12,7 +12,7 @@ import orderRouter from "./router/orderRoutes.js";
 import database from "./database/db.js";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY,{
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2025-09-30"
 })
 
@@ -20,16 +20,26 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY,{
 const app = express();
 
 // Enable CORS for your frontend and dashboard URLs
+// app.use(
+//     cors({
+//         origin: [process.env.FRONTEND_URL, process.env.DASHBOARD_URL], // Allowed origins
+//         methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+//         credentials: true, // Allow cookies and credentials to be sent
+//     })
+// );
+
 app.use(
     cors({
-        origin: [process.env.FRONTEND_URL, process.env.DASHBOARD_URL], // Allowed origins
+        origin: ["https://shopbud-admin.onrender.com",
+            "https://shopbud-frontend.onrender.com"
+        ],
         methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-        credentials: true, // Allow cookies and credentials to be sent
+        credentials: true,
     })
-);
+)
 
 app.post(
-    "/api/v1/payment/webhook", 
+    "/api/v1/payment/webhook",
     express.raw({ type: "application/json" }), // Use raw body parser because Stripe requires the raw payload
     async (req, res) => {
         const sig = req.headers["stripe-signature"];    // Stripe sends a signature header for security
@@ -37,8 +47,8 @@ app.post(
         try {
             // Verify the Stripe webhook signature to prevent tampering
             event = stripe.webhooks.constructEvent(
-                req.body, 
-                sig, 
+                req.body,
+                sig,
                 process.env.STRIPE_WEBHOOK_SECRET
             );
         } catch (error) {
@@ -60,7 +70,7 @@ app.post(
                 // Update the `paid_at` timestamp in the corresponding `orders` table
                 await database.query(
                     `UPDATE orders SET paid_at = NOW() WHERE id = $1 RETURNING *`,
-                     [paymentTableUpdateResult.rows[0].order_id]
+                    [paymentTableUpdateResult.rows[0].order_id]
                 );
 
                 const orderId = paymentTableUpdateResult.rows[0].order_id;
@@ -74,13 +84,13 @@ app.post(
                 for (const item of orderedItems) {
                     await database.query(
                         `UPDATE products SET stock = stock - $1 WHERE id =$2`,
-                            [item.quantity, item.product_id]
-                        );
+                        [item.quantity, item.product_id]
+                    );
                 }
             } catch (error) {
                 return res
-                .status(500)
-                .send(`Error updating paid_at timestamp in orders table.`)
+                    .status(500)
+                    .send(`Error updating paid_at timestamp in orders table.`)
             }
         }
         // Respond to Stripe immediately to acknowledge receipt
@@ -98,9 +108,9 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded data (used
 // Enable file uploads and store temp files before sending to Cloudinary
 app.use(
     fileUpload({
-    tempFileDir: "./upload", // Temporary folder for uploads
-    useTempFiles: true, // Use temp files instead of keeping them in memory
-})
+        tempFileDir: "./upload", // Temporary folder for uploads
+        useTempFiles: true, // Use temp files instead of keeping them in memory
+    })
 );
 
 // ----Routes----
