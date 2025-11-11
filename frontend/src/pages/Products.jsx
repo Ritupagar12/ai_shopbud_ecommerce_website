@@ -74,6 +74,7 @@ const Products = () => {
                     availability={availability}
                     setAvailability={setAvailability}
                     setCurrentPage={setCurrentPage}
+                    closeMobileFilter={() => setIsMobileFilterOpen(false)}
                   />
                 </div>
               </div>
@@ -93,6 +94,7 @@ const Products = () => {
                   availability={availability}
                   setAvailability={setAvailability}
                   setCurrentPage={setCurrentPage}
+                  closeMobileFilter={() => setIsMobileFilterOpen(false)}
                 />
               </div>
             </div>
@@ -167,6 +169,8 @@ export default Products;
 // =====================
 // FiltersContent Component
 // =====================
+
+
 const FiltersContent = ({
   selectedCategory,
   setSelectedCategory,
@@ -177,8 +181,20 @@ const FiltersContent = ({
   setSelectedRating,
   availability,
   setAvailability,
-  setCurrentPage
+  setCurrentPage,
+  closeMobileFilter
 }) => {
+
+  const [manualMin, setManualMin] = useState(priceRange[0]);
+  const [manualMax, setManualMax] = useState(priceRange[1]);
+
+  const handleSelection = (setter, value) => {
+    setter(value);
+    setCurrentPage(1);
+    if (closeMobileFilter) closeMobileFilter();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Filters</h2>
@@ -186,41 +202,85 @@ const FiltersContent = ({
       {/* Price Range */}
       <div>
         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">Price Range</h3>
+        {/* Slider */}
+        <input
+          type="range"
+          min="0"
+          max="10000"
+          value={priceRange[0]}
+          onChange={(e) => setPriceRange([priceRange[1], parseInt(e.target.value)])}
+          onMouseUp={() => closeMobileFilter && closeMobileFilter()}
+          onTouchEnd={() => closeMobileFilter && closeMobileFilter()}
+          className="w-full mb-2"
+        />
         <input
           type="range"
           min="0"
           max="10000"
           value={priceRange[1]}
           onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-          className="w-full"
+          className="w-full mb-2"
         />
+        {/* Manual Input */}
+
+
+        <div className="flex justify-between mt-2 gap-2">
+          <input
+            type="number"
+            value={manualMin}
+            onChange={(e) => setManualMin(e.target.value)}
+            onBlur={() => {
+              let val = parseInt(manualMin) || 0;
+              val = Math.max(0, Math.min(val, priceRange[1]));
+              setPriceRange([val, priceRange[1]]);
+              setManualMin(val);
+            }}
+            className="w-1/2 p-2 border rounded"
+            placeholder="Min"
+          />
+          <input
+            type="number"
+            value={manualMax}
+            onChange={(e) => setManualMax(e.target.value)}
+            onBlur={() => {
+              let val = parseInt(manualMax) || priceRange[0];
+              val = Math.min(10000, Math.max(val, priceRange[0]));
+              setPriceRange([priceRange[0], val]);
+              setManualMax(val);
+              if(closeMobileFilter) closeMobileFilter();
+            }}
+            className="w-1/2 p-2 border rounded"
+            placeholder="Max"
+          />
+          
+        </div>
         <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-1">
           <span>${priceRange[0]}</span>
           <span>${priceRange[1]}</span>
         </div>
       </div>
 
-     {/* Rating */}
-<div>
-  <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">Rating</h3>
-  <div className="flex flex-col space-y-2"> {/* Changed flex-row → flex-col */}
-    {[4, 3, 2, 1].map((rating) => (
-      <button
-        key={rating}
-        onClick={() => { setSelectedRating(selectedRating === rating ? 0 : rating); setCurrentPage(1); }}
-        className={`flex items-center space-x-2 p-2 rounded ${selectedRating === rating ? "bg-purple-100 dark:bg-purple-700" : "hover:bg-gray-100 dark:hover:bg-gray-700"}`}
-      >
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`w-4 h-4 ${i < rating ? "text-yellow-400" : "text-gray-300 dark:text-gray-500"}`}
-          />
-        ))}
-        <span className="text-sm text-gray-700 dark:text-gray-300">{rating} & up</span>
-      </button>
-    ))}
-  </div>
-</div>
+      {/* Rating */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">Rating</h3>
+        <div className="flex flex-col space-y-2"> {/* Changed flex-row → flex-col */}
+          {[4, 3, 2, 1].map((rating) => (
+            <button
+              key={rating}
+              onClick={() => handleSelection(setSelectedRating, selectedRating === rating ? 0 : rating)}
+              className={`flex items-center space-x-2 p-2 rounded ${selectedRating === rating ? "bg-purple-100 dark:bg-purple-700" : "hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+            >
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-4 h-4 ${i < rating ? "text-yellow-400" : "text-gray-300 dark:text-gray-500"}`}
+                />
+              ))}
+              <span className="text-sm text-gray-700 dark:text-gray-300">{rating} & up</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Availability */}
       <div>
@@ -229,7 +289,7 @@ const FiltersContent = ({
           {["in-stock", "limited", "out-of-stock"].map(status => (
             <button
               key={status}
-              onClick={() => setAvailability(availability === status ? "" : status)}
+              onClick={() => handleSelection(setAvailability, availability === status ? "" : status)}
               className={`w-full p-2 text-left rounded ${availability === status ? "bg-purple-100 dark:bg-purple-700" : "hover:bg-gray-100 dark:hover:bg-gray-700"}`}
             >
               {status === "in-stock" ? "In Stock" : status === "limited" ? "Limited Stock" : "Out of Stock"}
@@ -243,7 +303,7 @@ const FiltersContent = ({
         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">Category</h3>
         <div className="flex flex-col space-y-2">
           <button
-            onClick={() => { setSelectedCategory(""); setCurrentPage(1); window.scrollTo({top:0, behavior:"smooth"}); }}
+            onClick={() => handleSelection(setSelectedCategory, "")}
             className={`w-full p-2 text-left rounded ${!selectedCategory ? "bg-purple-100 dark:bg-purple-700" : "hover:bg-gray-100 dark:hover:bg-gray-700"}`}
           >
             All Categories
@@ -251,7 +311,7 @@ const FiltersContent = ({
           {categories.map(cat => (
             <button
               key={cat.id}
-              onClick={() => { setSelectedCategory(cat.name); setCurrentPage(1); window.scrollTo({top:0, behavior:"smooth"}); }}
+              onClick={() => handleSelection(setSelectedCategory, cat.name)}
               className={`w-full p-2 text-left rounded ${selectedCategory === cat.name ? "bg-purple-100 dark:bg-purple-700" : "hover:bg-gray-100 dark:hover:bg-gray-700"}`}
             >
               {cat.name}

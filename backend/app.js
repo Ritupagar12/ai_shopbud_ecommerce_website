@@ -20,23 +20,23 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 const app = express();
 
 // Enable CORS for your frontend and dashboard URLs
-// app.use(
-//     cors({
-//         origin: [process.env.FRONTEND_URL, process.env.DASHBOARD_URL], // Allowed origins
-//         methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-//         credentials: true, // Allow cookies and credentials to be sent
-//     })
-// );
-
 app.use(
     cors({
-        origin: ["https://shopbud-admin.onrender.com",
-            "https://shopbud-frontend.onrender.com"
-        ],
+        origin: [process.env.FRONTEND_URL, process.env.DASHBOARD_URL], // Allowed origins
         methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-        credentials: true,
+        credentials: true, // Allow cookies and credentials to be sent
     })
-)
+);
+
+// app.use(
+//     cors({
+//         origin: ["https://shopbud-admin.onrender.com",
+//             "https://shopbud-frontend.onrender.com"
+//         ],
+//         methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+//         credentials: true,
+//     })
+// )
 
 app.post(
     "/api/v1/payment/webhook",

@@ -23,6 +23,7 @@ export const login = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       const res = await axiosInstance.post("/auth/login", data);
+      localStorage.setItem("token", res.data.token);
       toast.success(res.data.message);
       thunkAPI.dispatch(toggleAuthPopup());
       return res.data.user;
@@ -52,6 +53,7 @@ export const logout = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const res = await axiosInstance.get("/auth/logout");
+      localStorage.removeItem("token");
       thunkAPI.dispatch(toggleAuthPopup());
       return null;
     } catch (error) {

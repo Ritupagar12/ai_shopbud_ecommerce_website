@@ -7,7 +7,7 @@ import {
   toggleSearchBar,
   toggleSidebar,
 } from "../../store/slices/popupSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 
 const Navbar = () => {
@@ -37,9 +37,12 @@ const Navbar = () => {
 
           {/* Center: Logo */}
           <div className="flex-1 flex justify-center">
-            <h1 className="text-3xl font-extrabold font-calligraphy bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent select-none">
+            <Link to="/">
+            <h1
+            className="text-3xl font-extrabold font-calligraphy bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent select-none">
               ShopBud
             </h1>
+            </Link>
           </div>
 
           {/* Right: Actions */}
