@@ -49,7 +49,6 @@ const Products = () => {
     <div className="min-h-screen pt-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-8">
-
           {/* Sidebar Filters */}
           <div>
             {/* Mobile Overlay */}
@@ -57,12 +56,14 @@ const Products = () => {
               <div className="fixed inset-0 z-50 flex">
                 <div className="bg-black/50 absolute inset-0" onClick={() => setIsMobileFilterOpen(false)} />
                 <div className="relative bg-white dark:bg-gray-800 w-80 h-full p-6 overflow-y-auto shadow-lg rounded-r-lg">
+                  {/* Mobile close button */}
                   <button
                     onClick={() => setIsMobileFilterOpen(false)}
                     className="absolute top-4 right-4 text-gray-600 dark:text-gray-300 hover:text-red-500"
                   >
                     <X className="w-6 h-6" />
                   </button>
+
                   <FiltersContent
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
@@ -75,6 +76,7 @@ const Products = () => {
                     setAvailability={setAvailability}
                     setCurrentPage={setCurrentPage}
                     closeMobileFilter={() => setIsMobileFilterOpen(false)}
+                    isMobile={true}
                   />
                 </div>
               </div>
@@ -95,6 +97,7 @@ const Products = () => {
                   setAvailability={setAvailability}
                   setCurrentPage={setCurrentPage}
                   closeMobileFilter={() => setIsMobileFilterOpen(false)}
+                  isMobile={false}
                 />
               </div>
             </div>
@@ -102,7 +105,6 @@ const Products = () => {
 
           {/* Main Content */}
           <div className="flex-1">
-
             {/* Search Bar + AI Button */}
             <div className="mb-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="flex-1 relative min-w-[150px]">
@@ -170,7 +172,6 @@ export default Products;
 // FiltersContent Component
 // =====================
 
-
 const FiltersContent = ({
   selectedCategory,
   setSelectedCategory,
@@ -182,25 +183,43 @@ const FiltersContent = ({
   availability,
   setAvailability,
   setCurrentPage,
-  closeMobileFilter
+  closeMobileFilter,
+  isMobile = false,
 }) => {
-
   const [manualMin, setManualMin] = useState(priceRange[0]);
   const [manualMax, setManualMax] = useState(priceRange[1]);
+  const [tempCategory, setTempCategory] = useState(selectedCategory);
+  const [tempPrice, setTempPrice] = useState(priceRange);
+  const [tempRating, setTempRating] = useState(selectedRating);
+  const [tempAvailability, setTempAvailability] = useState(availability);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    setTempCategory(selectedCategory);
+    setTempPrice(priceRange);
+    setTempRating(selectedRating);
+    setTempAvailability(availability);
+  }, [isMobile, selectedCategory, priceRange, selectedRating, availability]);
 
   const handleSelection = (setter, value) => {
-    setter(value);
-    setCurrentPage(1);
-    if (closeMobileFilter) closeMobileFilter();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (isMobile) {
+      setter(value);
+    } else {
+      setter(value);
+      setCurrentPage(1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center mb-4">
-  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Filters</h2>
-  <button
-    onClick={() => {
+  const handleClearAll = () => {
+    if (isMobile) {
+      setTempCategory("");
+      setTempPrice([0, 10000]);
+      setTempRating(0);
+      setTempAvailability("");
+      setManualMin(0);
+      setManualMax(10000);
+    } else {
       setSelectedCategory("");
       setPriceRange([0, 10000]);
       setManualMin(0);
@@ -208,85 +227,136 @@ const FiltersContent = ({
       setSelectedRating(0);
       setAvailability("");
       setCurrentPage(1);
-      if (closeMobileFilter) closeMobileFilter();
       window.scrollTo({ top: 0, behavior: "smooth" });
-    }}
-    className="text-sm text-red-500 hover:underline"
-  >
-    Clear All
-  </button>
-</div>
+    }
+  };
+
+  const handleApply = () => {
+    setSelectedCategory(tempCategory);
+    setPriceRange(tempPrice);
+    setSelectedRating(tempRating);
+    setAvailability(tempAvailability);
+    setCurrentPage(1);
+    closeMobileFilter && closeMobileFilter();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Desktop: Clear All top right */}
+      {!isMobile && (
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Filters</h2>
+          <button onClick={handleClearAll} className="text-sm text-red-500 hover:underline">
+            Clear All
+          </button>
+        </div>
+      )}
+
+      {/* Mobile: Clear All below Filters title and above Price Range */}
+      {isMobile && (
+        <>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Filters</h2>
+          <div className="mt-2 mb-4">
+            <button
+              onClick={handleClearAll}
+              className="w-full bg-red-500 text-white py-2 rounded-md shadow-sm hover:bg-red-600 transition-colors"
+            >
+              Clear All
+            </button>
+          </div>
+        </>
+      )}
 
       {/* Price Range */}
       <div>
         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">Price Range</h3>
-        {/* Slider */}
         <input
           type="range"
           min="0"
           max="10000"
-          value={priceRange[0]}
-          onChange={(e) => setPriceRange([priceRange[1], parseInt(e.target.value)])}
-          onMouseUp={() => closeMobileFilter && closeMobileFilter()}
-          onTouchEnd={() => closeMobileFilter && closeMobileFilter()}
+          value={isMobile ? tempPrice[0] : priceRange[0]}
+          onChange={(e) =>
+            isMobile
+              ? setTempPrice([parseInt(e.target.value), tempPrice[1]])
+              : setPriceRange([parseInt(e.target.value), priceRange[1]])
+          }
           className="w-full mb-2"
         />
         <input
           type="range"
           min="0"
           max="10000"
-          value={priceRange[1]}
-          onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+          value={isMobile ? tempPrice[1] : priceRange[1]}
+          onChange={(e) =>
+            isMobile
+              ? setTempPrice([tempPrice[0], parseInt(e.target.value)])
+              : setPriceRange([priceRange[0], parseInt(e.target.value)])
+          }
           className="w-full mb-2"
         />
-        {/* Manual Input */}
-
-
         <div className="flex justify-between mt-2 gap-2">
           <input
             type="number"
-            value={manualMin}
-            onChange={(e) => setManualMin(e.target.value)}
+            value={isMobile ? tempPrice[0] : manualMin}
+            onChange={(e) =>
+              isMobile
+                ? setTempPrice([parseInt(e.target.value) || 0, tempPrice[1]])
+                : setManualMin(e.target.value)
+            }
             onBlur={() => {
-              let val = parseInt(manualMin) || 0;
-              val = Math.max(0, Math.min(val, priceRange[1]));
-              setPriceRange([val, priceRange[1]]);
-              setManualMin(val);
+              let val = parseInt(isMobile ? tempPrice[0] : manualMin) || 0;
+              val = Math.max(0, Math.min(val, isMobile ? tempPrice[1] : priceRange[1]));
+              isMobile ? setTempPrice([val, tempPrice[1]]) : setPriceRange([val, priceRange[1]]);
+              !isMobile && setManualMin(val);
             }}
-            className="w-1/2 p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+            className="w-1/2 p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             placeholder="Min"
           />
           <input
             type="number"
-            value={manualMax}
-            onChange={(e) => setManualMax(e.target.value)}
+            value={isMobile ? tempPrice[1] : manualMax}
+            onChange={(e) =>
+              isMobile
+                ? setTempPrice([tempPrice[0], parseInt(e.target.value) || 0])
+                : setManualMax(e.target.value)
+            }
             onBlur={() => {
-              let val = parseInt(manualMax) || priceRange[0];
-              val = Math.min(10000, Math.max(val, priceRange[0]));
-              setPriceRange([priceRange[0], val]);
-              setManualMax(val);
-              if(closeMobileFilter) closeMobileFilter();
+              let val =
+                parseInt(isMobile ? tempPrice[1] : manualMax) ||
+                (isMobile ? tempPrice[0] : priceRange[0]);
+              val = Math.min(10000, Math.max(val, isMobile ? tempPrice[0] : priceRange[0]));
+              isMobile ? setTempPrice([tempPrice[0], val]) : setPriceRange([priceRange[0], val]);
+              !isMobile && setManualMax(val);
             }}
-            className="w-1/2 p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+            className="w-1/2 p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             placeholder="Max"
           />
-          
         </div>
         <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-1">
-          <span>${priceRange[0]}</span>
-          <span>${priceRange[1]}</span>
+          <span>${isMobile ? tempPrice[0] : priceRange[0]}</span>
+          <span>${isMobile ? tempPrice[1] : priceRange[1]}</span>
         </div>
       </div>
 
       {/* Rating */}
       <div>
         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">Rating</h3>
-        <div className="flex flex-col space-y-2"> {/* Changed flex-row → flex-col */}
+        <div className="flex flex-col space-y-2">
           {[4, 3, 2, 1].map((rating) => (
             <button
               key={rating}
-              onClick={() => handleSelection(setSelectedRating, selectedRating === rating ? 0 : rating)}
-              className={`flex items-center space-x-2 p-2 rounded ${selectedRating === rating ? "bg-purple-100 dark:bg-purple-700" : "hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+              onClick={() =>
+                handleSelection(
+                  isMobile ? setTempRating : setSelectedRating,
+                  (isMobile ? tempRating : selectedRating) === rating ? 0 : rating
+                )
+              }
+              className={`flex items-center space-x-2 p-2 rounded ${
+                (isMobile ? tempRating : selectedRating) === rating
+                  ? "bg-purple-100 dark:bg-purple-700"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
             >
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -304,13 +374,26 @@ const FiltersContent = ({
       <div>
         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">Availability</h3>
         <div className="flex flex-col space-y-2">
-          {["in-stock", "limited", "out-of-stock"].map(status => (
+          {["in-stock", "limited", "out-of-stock"].map((status) => (
             <button
               key={status}
-              onClick={() => handleSelection(setAvailability, availability === status ? "" : status)}
-              className={`w-full p-2 text-left rounded ${availability === status ? "bg-purple-100 dark:bg-purple-700" : "hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+              onClick={() =>
+                handleSelection(
+                  isMobile ? setTempAvailability : setAvailability,
+                  (isMobile ? tempAvailability : availability) === status ? "" : status
+                )
+              }
+              className={`w-full p-2 text-left rounded ${
+                (isMobile ? tempAvailability : availability) === status
+                  ? "bg-purple-100 dark:bg-purple-700"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
             >
-              {status === "in-stock" ? "In Stock" : status === "limited" ? "Limited Stock" : "Out of Stock"}
+              {status === "in-stock"
+                ? "In Stock"
+                : status === "limited"
+                ? "Limited Stock"
+                : "Out of Stock"}
             </button>
           ))}
         </div>
@@ -321,22 +404,47 @@ const FiltersContent = ({
         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">Category</h3>
         <div className="flex flex-col space-y-2">
           <button
-            onClick={() => handleSelection(setSelectedCategory, "")}
-            className={`w-full p-2 text-left rounded ${!selectedCategory ? "bg-purple-100 dark:bg-purple-700" : "hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+            onClick={() =>
+              handleSelection(isMobile ? setTempCategory : setSelectedCategory, "")
+            }
+            className={`w-full p-2 text-left rounded ${
+              !(isMobile ? tempCategory : selectedCategory)
+                ? "bg-purple-100 dark:bg-purple-700"
+                : "hover:bg-gray-100 dark:hover:bg-gray-700"
+            }`}
           >
             All Categories
           </button>
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => handleSelection(setSelectedCategory, cat.name)}
-              className={`w-full p-2 text-left rounded ${selectedCategory === cat.name ? "bg-purple-100 dark:bg-purple-700" : "hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+              onClick={() =>
+                handleSelection(
+                  isMobile ? setTempCategory : setSelectedCategory,
+                  cat.name
+                )
+              }
+              className={`w-full p-2 text-left rounded ${
+                (isMobile ? tempCategory : selectedCategory) === cat.name
+                  ? "bg-purple-100 dark:bg-purple-700"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
             >
               {cat.name}
             </button>
           ))}
         </div>
       </div>
+
+      {/* Mobile Apply Button */}
+      {isMobile && (
+        <button
+          onClick={handleApply}
+          className="w-full mt-6 bg-purple-500 text-white py-3 rounded-lg hover:bg-purple-600 transition-colors"
+        >
+          Apply Filters
+        </button>
+      )}
     </div>
   );
 };
