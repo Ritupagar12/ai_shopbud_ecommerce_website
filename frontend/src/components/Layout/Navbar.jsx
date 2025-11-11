@@ -26,7 +26,7 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-md dark:shadow-lg transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Left: Sidebar Menu */}
           <button
             onClick={() => dispatch(toggleSidebar())}
@@ -36,21 +36,21 @@ const Navbar = () => {
           </button>
 
           {/* Center: Logo */}
-          <div className="flex-1 flex justify-center">
+          <div className="flex-1 flex justify-center px-4 sm:px-0">
             <Link to="/">
             <h1
-            className="text-3xl font-extrabold font-calligraphy bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent select-none">
+            className="text-xl sm:text-3xl font-extrabold font-calligraphy bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent select-none">
               ShopBud
             </h1>
             </Link>
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-0.5 sm:space-x-3">
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ml-1 sm:ml-0"
             >
               {theme === "dark" ? (
                 <Sun className="w-5 h-5 text-gray-300" />
