@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 
 const HeroSlider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
   const slides = [
     {
@@ -45,10 +47,26 @@ const HeroSlider = () => {
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
+  const handleTouchStart = (e) => setTouchStart(e.touches[0].clientX);
+  const handleTouchMove = (e) => setTouchEnd(e.touches[0].clientX);
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+    if (distance > minSwipeDistance) nextSlide();
+    if (distance < -minSwipeDistance) prevSlide();
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
   const slide = slides[currentSlide];
 
   return (
-    <div className="relative h-[75vh] sm:h-[65vh] md:h-[70vh] overflow-hidden rounded-3xl shadow-xl">
+    <div className="relative h-[75vh] sm:h-[65vh] md:h-[70vh] overflow-hidden rounded-3xl shadow-xl"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Slide Background */}
       <div
         className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
@@ -97,11 +115,10 @@ const HeroSlider = () => {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index === currentSlide
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide
                 ? "bg-indigo-500 shadow-lg"
                 : "bg-white/40 dark:bg-gray-400/40 hover:bg-white/60 dark:hover:bg-gray-500/60"
-            }`}
+              }`}
           />
         ))}
       </div>
