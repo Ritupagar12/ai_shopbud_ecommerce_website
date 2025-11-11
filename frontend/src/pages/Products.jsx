@@ -197,7 +197,25 @@ const FiltersContent = ({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Filters</h2>
+      <div className="flex justify-between items-center mb-4">
+  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Filters</h2>
+  <button
+    onClick={() => {
+      setSelectedCategory("");
+      setPriceRange([0, 10000]);
+      setManualMin(0);
+      setManualMax(10000);
+      setSelectedRating(0);
+      setAvailability("");
+      setCurrentPage(1);
+      if (closeMobileFilter) closeMobileFilter();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }}
+    className="text-sm text-red-500 hover:underline"
+  >
+    Clear All
+  </button>
+</div>
 
       {/* Price Range */}
       <div>
@@ -235,7 +253,7 @@ const FiltersContent = ({
               setPriceRange([val, priceRange[1]]);
               setManualMin(val);
             }}
-            className="w-1/2 p-2 border rounded"
+            className="w-1/2 p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
             placeholder="Min"
           />
           <input
@@ -249,7 +267,7 @@ const FiltersContent = ({
               setManualMax(val);
               if(closeMobileFilter) closeMobileFilter();
             }}
-            className="w-1/2 p-2 border rounded"
+            className="w-1/2 p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
             placeholder="Max"
           />
           
